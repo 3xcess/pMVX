@@ -3,22 +3,44 @@ set -euo pipefail
 
 q() { "$@" >/dev/null 2>&1; }
 
-LOOPS=1
+CONFIDENCE_THRESHOLD="0.95"
+MAX_LOOPS=""
+RUNS_PER_WINDOW="5"
 
 for arg in "$@"; do
   case "$arg" in
+    --confidence-threshold=*)
+      CONFIDENCE_THRESHOLD="${arg#*=}"
+      ;;
+    --max-loops=*)
+      MAX_LOOPS="${arg#*=}"
+      ;;
+    --runs-per-window=*)
+      RUNS_PER_WINDOW="${arg#*=}"
+      ;;
     --loops=*)
-      LOOPS="${arg#*=}"
+      MAX_LOOPS="${arg#*=}"
+      echo "--loops is deprecated; treating it as --max-loops" >&2
       ;;
     *)
-      echo "Usage: $0 [--loops=N]" >&2
+      echo "Usage: $0 [--confidence-threshold=X] [--max-loops=N] [--runs-per-window=N] [--loops=N]" >&2
       exit 1
       ;;
   esac
 done
 
-if ! [[ "$LOOPS" =~ ^[0-9]+$ ]] || (( LOOPS <= 0 )); then
-  echo "Error: --loops must be a positive integer." >&2
+if ! [[ "$CONFIDENCE_THRESHOLD" =~ ^([0-9]+)(\.[0-9]+)?$ ]]; then
+  echo "Error: --confidence-threshold must be a number between 0.0 and 1.0." >&2
+  exit 1
+fi
+
+if [[ -n "$MAX_LOOPS" ]] && { ! [[ "$MAX_LOOPS" =~ ^[0-9]+$ ]] || (( MAX_LOOPS <= 0 )); }; then
+  echo "Error: --max-loops must be a positive integer." >&2
+  exit 1
+fi
+
+if ! [[ "$RUNS_PER_WINDOW" =~ ^[0-9]+$ ]] || (( RUNS_PER_WINDOW <= 0 )); then
+  echo "Error: --runs-per-window must be a positive integer." >&2
   exit 1
 fi
 
@@ -53,18 +75,15 @@ sleep 20
 echo ''
 echo '========== Auto_Ext Running =========='
 
-for (( loop = 1; loop <= LOOPS; loop++ )); do
-  echo "=== Loop ${loop}/${LOOPS}: Running tests ==="
-  ./ssh_vm.sh all -- sudo /mnt/w/config/tests/run_tests.sh --runs=5
+TUNING_ARGS=(
+  "--confidence-threshold=${CONFIDENCE_THRESHOLD}"
+  "--runs-per-window=${RUNS_PER_WINDOW}"
+)
 
-  echo "=== Loop ${loop}/${LOOPS}: Comparing vm1 vs vm2 ==="
-  ./tests/compare.sh
+if [[ -n "$MAX_LOOPS" ]]; then
+  TUNING_ARGS+=("--max-loops=${MAX_LOOPS}")
+fi
 
-  echo "=== Loop ${loop}/${LOOPS}: Running decision logic ==="
-  ./decision_logic.py
+python3 ./tuning_loop.py "${TUNING_ARGS[@]}"
 
-  echo "=== Loop ${loop}/${LOOPS} complete ==="
-  echo
-done
-
-echo "=== All ${LOOPS} loop(s) done. Check config/tests/results.log for summaries. ==="
+echo "=== Tuning loop done. Check config/tests/results.log and config/tests/tuning_history.jsonl for summaries. ==="
