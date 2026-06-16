@@ -78,10 +78,60 @@ cd config
 
 ### Once VMs are available
 ```bash
-./run_config.sh --loops=5 
-#Default is 1, set to any number of loops needed. 
-#Each loop runs 5 iterations of 3 random benchmarks.
+./run_config.sh
 ```
+
+The configuration loop is guided by a local mock Gemini advisor. It does not call
+the real Gemini API, does not require API keys, and does not make external API
+calls. The loop runs benchmark windows, compares vm1 against vm2, asks the mock
+advisor whether the challenger should be promoted, then generates the next
+challenger configuration from the advisor response.
+
+The primary stopping condition is advisor confidence in the current best
+configuration. The default confidence threshold is `0.95`.
+
+```bash
+./run_config.sh --confidence-threshold=0.90
+```
+
+Use `--max-loops` only as a safety cap:
+
+```bash
+./run_config.sh --confidence-threshold=0.95 --max-loops=10
+```
+
+Run a one-loop sanity test:
+
+```bash
+./run_config.sh --confidence-threshold=0.95 --max-loops=1
+```
+
+You can also change the benchmark window size:
+
+```bash
+./run_config.sh --runs-per-window=3
+```
+
+The old `--loops=N` option is still accepted as a deprecated alias for
+`--max-loops=N`.
+
+The tuning state lives in:
+
+- `config/state/main_config_state.json`
+- `config/state/challenger_config_state.json`
+
+The scheduler mappings from those state files are synced into:
+
+- `dispatcher_config_main.json`
+- `dispatcher_config_alt.json`
+
+Advisor responses and loop history are written to:
+
+- `config/tests/llm_proposals.jsonl`
+- `config/tests/tuning_history.jsonl`
+
+CPU knobs are represented in the tuning state and are applied only through the
+allowlisted local knob applier. Missing CPU tuning paths are skipped safely.
 
 ### Powering off the VMs
 ```bash
