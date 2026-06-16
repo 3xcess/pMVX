@@ -1,0 +1,89 @@
+{
+  "load_classes": [
+    "CPU",
+    "IO",
+    "MEM",
+    "NET",
+    "PARALLEL",
+    "IDLE"
+  ],
+  "schedulers": [
+    "build/scheds/c/scx_simple",
+    "build/scheds/c/scx_central",
+    "build/scheds/c/scx_prev",
+    "build/scheds/c/scx_nest",
+    "target/release/scx_lavd",
+    "target/release/scx_flash",
+    "target/release/scx_beerland",
+    "target/release/scx_layered",
+    "target/release/scx_cosmos",
+    "target/release/scx_bpfland"
+  ],
+  "cpu_knobs": {
+    "scaling_governor": {
+      "type": "string",
+      "allowed_values": [
+        "performance",
+        "powersave",
+        "schedutil",
+        "ondemand",
+        "conservative"
+      ],
+      "interface": "sysfs",
+      "scope": "per_cpu",
+      "apply": true
+    },
+    "energy_performance_preference": {
+      "type": "string",
+      "allowed_values": [
+        "performance",
+        "balance_performance",
+        "default",
+        "balance_power",
+        "power"
+      ],
+      "interface": "sysfs",
+      "scope": "per_cpu",
+      "apply": true
+    },
+    "intel_pstate_min_perf_pct": {
+      "type": "int",
+      "min": 1,
+      "max": 100,
+      "interface": "sysfs",
+      "scope": "global",
+      "apply": true
+    },
+    "intel_pstate_max_perf_pct": {
+      "type": "int",
+      "min": 1,
+      "max": 100,
+      "interface": "sysfs",
+      "scope": "global",
+      "apply": true
+    }
+  },
+  "sysctl_knobs": {
+    "vm.swappiness": {
+      "type": "int",
+      "min": 1,
+      "max": 80,
+      "interface": "sysctl",
+      "apply": false
+    },
+    "vm.dirty_ratio": {
+      "type": "int",
+      "min": 5,
+      "max": 40,
+      "interface": "sysctl",
+      "apply": false
+    },
+    "vm.dirty_background_ratio": {
+      "type": "int",
+      "min": 1,
+      "max": 20,
+      "interface": "sysctl",
+      "apply": false
+    }
+  }
+}
