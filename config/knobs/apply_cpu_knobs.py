@@ -76,6 +76,20 @@ def target_paths_for_knob(knob: str, discovered: Dict[str, Any]) -> List[str]:
     return [entry["path"] for entry in entries if "path" in entry]
 
 
+def pstate_min_max_valid(cpu_knobs: Dict[str, Any]) -> Tuple[bool, str]:
+    min_value = cpu_knobs.get("intel_pstate_min_perf_pct")
+    max_value = cpu_knobs.get("intel_pstate_max_perf_pct")
+    if min_value is None or max_value is None:
+        return True, ""
+    if isinstance(min_value, bool) or isinstance(max_value, bool):
+        return False, "intel_pstate min/max values must be integers"
+    if not isinstance(min_value, int) or not isinstance(max_value, int):
+        return False, "intel_pstate min/max values must be integers"
+    if min_value > max_value:
+        return False, "intel_pstate_min_perf_pct must be <= intel_pstate_max_perf_pct"
+    return True, ""
+
+
 def apply_config(config_path: str, snapshot_path: str) -> int:
     try:
         state = load_json(config_path)
@@ -88,6 +102,18 @@ def apply_config(config_path: str, snapshot_path: str) -> int:
         log("fatal: config must be an object with a cpu_knobs object")
         return 2
 
+    cpu_knobs = state.get("cpu_knobs", {})
+    ok, reason = pstate_min_max_valid(cpu_knobs)
+    if not ok:
+        log(f"warning: invalid intel_pstate min/max combination; skipping CPU knob application: {reason}")
+        save_json(snapshot_path, {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "config_path": config_path,
+            "values": [],
+            "skipped": reason,
+        })
+        return 0
+
     allowed_cpu_knobs = allowed_surface.get("cpu_knobs", {})
     discovered = discover_cpu_knobs()
     snapshot: Dict[str, Any] = {
@@ -96,7 +122,7 @@ def apply_config(config_path: str, snapshot_path: str) -> int:
         "values": [],
     }
 
-    for knob, value in state.get("cpu_knobs", {}).items():
+    for knob, value in cpu_knobs.items():
         meta = allowed_cpu_knobs.get(knob)
         if not isinstance(meta, dict):
             log(f"warning: ignoring unallowlisted CPU knob {knob!r}")

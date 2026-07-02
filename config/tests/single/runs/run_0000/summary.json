@@ -1,0 +1,45 @@
+{
+  "benchmark_count": 3,
+  "benchmark_name": "pmvx_benchmark_window",
+  "cpu_util_percent": null,
+  "elapsed_ms": 2.6666666666666665,
+  "loadavg_1m": null,
+  "memory_available_kb": null,
+  "notes": "single-target candidate loop 0",
+  "p50_latency_us": null,
+  "p95_latency_us": null,
+  "p99_latency_us": null,
+  "per_benchmark": {
+    "phoronix_pybench": {
+      "avg_elapsed_ms": 3.0,
+      "count": 1,
+      "max_elapsed_ms": 3.0,
+      "min_elapsed_ms": 3.0,
+      "statuses": [
+        127
+      ]
+    },
+    "sysbench_cpu": {
+      "avg_elapsed_ms": 2.0,
+      "count": 1,
+      "max_elapsed_ms": 2.0,
+      "min_elapsed_ms": 2.0,
+      "statuses": [
+        127
+      ]
+    },
+    "sysbench_memory": {
+      "avg_elapsed_ms": 3.0,
+      "count": 1,
+      "max_elapsed_ms": 3.0,
+      "min_elapsed_ms": 3.0,
+      "statuses": [
+        127
+      ]
+    }
+  },
+  "raw_file": "/home/excess/pMVX/pMVX/config/tests/single/current/current-test.txt",
+  "run_count": 3,
+  "throughput": null,
+  "timestamp": "2026-07-02T18:59:37.011195+00:00"
+}

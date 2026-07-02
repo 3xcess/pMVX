@@ -105,6 +105,11 @@ def validate_advisor_response(
         value_error = _validate_typed_knob_value("cpu_knobs", knob, value, meta)
         if value_error:
             errors.append(value_error)
+    min_perf = cpu_knobs.get("intel_pstate_min_perf_pct")
+    max_perf = cpu_knobs.get("intel_pstate_max_perf_pct")
+    if isinstance(min_perf, int) and not isinstance(min_perf, bool):
+        if isinstance(max_perf, int) and not isinstance(max_perf, bool) and min_perf > max_perf:
+            errors.append("cpu_knobs.intel_pstate_min_perf_pct must be <= intel_pstate_max_perf_pct")
 
     sysctl_knobs = next_config.get("sysctl_knobs", {})
     if sysctl_knobs is None:

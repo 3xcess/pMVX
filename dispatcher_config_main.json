@@ -2,10 +2,10 @@
   "SCHED_PATH": "./scx",
   "scheds": {
     "CPU": "build/scheds/c/scx_central",
+    "IDLE": "build/scheds/c/scx_central",
     "IO": "target/release/scx_bpfland",
     "MEM": "build/scheds/c/scx_simple",
     "NET": "target/release/scx_bpfland",
-    "PARALLEL": "build/scheds/c/scx_simple",
-    "IDLE": "build/scheds/c/scx_central"
+    "PARALLEL": "build/scheds/c/scx_simple"
   }
 }

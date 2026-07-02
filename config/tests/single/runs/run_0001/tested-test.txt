@@ -1,0 +1,3 @@
+2026-07-02T14:02:27-05:00 iter=1 name=sysbench_memory status=127 elapsed_ms=5
+2026-07-02T14:02:35-05:00 iter=1 name=perf_sched_all status=0 elapsed_ms=7714
+2026-07-02T14:02:35-05:00 iter=1 name=sysbench_cpu status=127 elapsed_ms=2

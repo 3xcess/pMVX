@@ -1,0 +1,6 @@
+[INFO] Cleared previous test logs: /home/excess/pMVX/pMVX/config/tests/3xcess-test.txt and /home/excess/pMVX/pMVX/config/tests/3xcess-test_detail.txt
+=== Iteration 1 / 1 ===
+========= 3xcess Running benchmark: sysbench_memory ===========
+========= 3xcess Running benchmark: perf_sched_all ===========
+========= 3xcess Running benchmark: sysbench_cpu ===========
+Done. Timing logged to /home/excess/pMVX/pMVX/config/tests/3xcess-test.txt, load changes to /home/excess/pMVX/pMVX/config/tests/3xcess-test_detail.txt (via dispatcher).

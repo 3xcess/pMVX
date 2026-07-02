@@ -1,0 +1,47 @@
+{
+  "benchmark_command": "config/tests/run_tests.sh --runs=1",
+  "benchmark_count": 3,
+  "benchmark_name": "pmvx_benchmark_window",
+  "benchmark_suite": "config/tests/run_tests.sh",
+  "cpu_util_percent": 15.19,
+  "elapsed_ms": 2.6666666666666665,
+  "loadavg_1m": 0.77,
+  "memory_available_kb": 11180040,
+  "notes": "vanilla Linux baseline; pMVX dispatcher not launched",
+  "p50_latency_us": null,
+  "p95_latency_us": null,
+  "p99_latency_us": null,
+  "per_benchmark": {
+    "phoronix_pybench": {
+      "avg_elapsed_ms": 3.0,
+      "count": 1,
+      "max_elapsed_ms": 3.0,
+      "min_elapsed_ms": 3.0,
+      "statuses": [
+        127
+      ]
+    },
+    "phoronix_sqlite": {
+      "avg_elapsed_ms": 3.0,
+      "count": 1,
+      "max_elapsed_ms": 3.0,
+      "min_elapsed_ms": 3.0,
+      "statuses": [
+        127
+      ]
+    },
+    "sysbench_memory": {
+      "avg_elapsed_ms": 2.0,
+      "count": 1,
+      "max_elapsed_ms": 2.0,
+      "min_elapsed_ms": 2.0,
+      "statuses": [
+        127
+      ]
+    }
+  },
+  "raw_file": "/home/excess/pMVX/pMVX/config/tests/single/baseline/baseline-test.txt",
+  "run_count": 3,
+  "throughput": null,
+  "timestamp": "2026-07-02T19:03:35.373417+00:00"
+}

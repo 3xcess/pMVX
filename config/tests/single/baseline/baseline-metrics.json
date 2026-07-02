@@ -1,0 +1,37 @@
+{
+  "cpu_count": 12,
+  "cpu_governors": {
+    "cpu0": "powersave",
+    "cpu1": "powersave",
+    "cpu10": "powersave",
+    "cpu11": "powersave",
+    "cpu2": "powersave",
+    "cpu3": "powersave",
+    "cpu4": "powersave",
+    "cpu5": "powersave",
+    "cpu6": "powersave",
+    "cpu7": "powersave",
+    "cpu8": "powersave",
+    "cpu9": "powersave"
+  },
+  "cpu_util_percent": 15.19,
+  "kernel": "6.14.0-37-generic",
+  "loadavg": {
+    "loadavg_15m": 0.58,
+    "loadavg_1m": 0.77,
+    "loadavg_5m": 0.86
+  },
+  "memory": {
+    "MemAvailable_kb": 11180040,
+    "MemFree_kb": 7896568,
+    "MemTotal_kb": 15545748
+  },
+  "notes": "vanilla Linux baseline metrics; pMVX dispatcher not launched by baseline workflow",
+  "phase": "after",
+  "platform": "Linux-6.14.0-37-generic-x86_64-with-glibc2.41",
+  "proc_stat_cpu": {
+    "idle": 4600646,
+    "total": 4736542
+  },
+  "timestamp": "2026-07-02T19:03:35.342534+00:00"
+}

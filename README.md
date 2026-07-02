@@ -77,15 +77,28 @@ cd config
 ```
 
 ### Once VMs are available
+Start Ollama locally and pull the default advisor model:
+
+```bash
+ollama pull deepseek-r1:8b
+curl http://localhost:11434/api/tags
+```
+
+Then run the configuration loop:
+
 ```bash
 ./run_config.sh
 ```
 
-The configuration loop is guided by a local mock Gemini advisor. It does not call
-the real Gemini API, does not require API keys, and does not make external API
-calls. The loop runs benchmark windows, compares vm1 against vm2, asks the mock
-advisor whether the challenger should be promoted, then generates the next
-challenger configuration from the advisor response.
+The configuration loop is guided by a local Ollama advisor. It does not use
+Gemini, OpenAI, Anthropic, cloud APIs, or API keys. The only LLM endpoint used
+by the loop is local Ollama at `http://localhost:11434/api/chat`.
+
+The loop runs benchmark windows, compares vm1 against vm2, sends the compact
+benchmark/config context to Ollama between benchmark windows, validates the
+advisor JSON response, promotes the challenger when advised, then generates the
+next challenger scheduler and CPU-knob configuration from the validated
+response. The live dispatcher/profiler path does not call the LLM.
 
 The primary stopping condition is advisor confidence in the current best
 configuration. The default confidence threshold is `0.95`.
@@ -112,6 +125,33 @@ You can also change the benchmark window size:
 ./run_config.sh --runs-per-window=3
 ```
 
+The default Ollama model is `deepseek-r1:8b`. Override it with:
+
+```bash
+PMVX_OLLAMA_MODEL=llama3.1:8b ./run_config.sh --confidence-threshold=0.95 --max-loops=1
+```
+
+The default Ollama endpoint is `http://localhost:11434/api/chat`. Override it
+with:
+
+```bash
+PMVX_OLLAMA_URL=http://localhost:11434/api/chat ./run_config.sh --confidence-threshold=0.95 --max-loops=1
+```
+
+You can also run the Python loop directly from the `config` directory:
+
+```bash
+python3 ./tuning_loop.py --confidence-threshold=0.95 --max-loops=1
+python3 ./tuning_loop.py --confidence-threshold=0.95
+```
+
+For advisor/context sanity checks:
+
+```bash
+python3 ./llm/build_context.py
+python3 ./llm/ollama_advisor.py
+```
+
 The old `--loops=N` option is still accepted as a deprecated alias for
 `--max-loops=N`.
 
@@ -132,6 +172,75 @@ Advisor responses and loop history are written to:
 
 CPU knobs are represented in the tuning state and are applied only through the
 allowlisted local knob applier. Missing CPU tuning paths are skipped safely.
+
+### Single-target non-VM configuration loop
+There is also a secondary configuration workflow that does not require KVM,
+vm1/vm2, or multi-version execution. This path benchmarks a vanilla Linux
+baseline first, then tests one candidate configuration at a time on the local
+target. Each candidate is compared against both the saved vanilla baseline and
+the current best configuration found during tuning.
+
+Start from the `config` directory:
+
+```bash
+cd config
+```
+
+Collect or refresh the vanilla Linux baseline:
+
+```bash
+./single/run_baseline.sh
+./single/run_baseline.sh --force
+```
+
+Run a one-loop sanity test using an existing baseline:
+
+```bash
+./single/run_single_tuning.sh --confidence-threshold=0.95 --max-loops=1 --reuse-baseline
+```
+
+Run until the advisor reaches the confidence threshold:
+
+```bash
+./single/run_single_tuning.sh --confidence-threshold=0.95 --reuse-baseline
+```
+
+Force a new baseline before tuning:
+
+```bash
+./single/run_single_tuning.sh --force-baseline --max-loops=1
+```
+
+The single-target workflow still uses the local Ollama advisor between
+benchmark windows, never during benchmark execution. It uses the same default
+model and endpoint as the MVE loop:
+
+```bash
+PMVX_OLLAMA_MODEL=llama3.1:8b ./single/run_single_tuning.sh --max-loops=1 --reuse-baseline
+PMVX_OLLAMA_URL=http://localhost:11434/api/chat ./single/run_single_tuning.sh --max-loops=1 --reuse-baseline
+```
+
+Single-target state lives in:
+
+- `config/state/single_main_config_state.json`
+- `config/state/single_alt_config_state.json`
+
+Here, `single_main_config_state.json` is the current best config and
+`single_alt_config_state.json` is the next candidate config. Candidates are
+promoted only when the metric comparison is favorable and the Ollama advisor
+also approves promotion.
+
+Single-target results and logs are written under:
+
+- `config/tests/single/baseline/`
+- `config/tests/single/current/`
+- `config/tests/single/best/`
+- `config/tests/single/runs/`
+- `config/tests/single/single_tuning_history.jsonl`
+- `config/tests/single/single_llm_proposals.jsonl`
+
+The non-VM workflow does not call `ssh_vm.sh`, does not launch vm1/vm2, and
+does not replace the MVE workflow above.
 
 ### Powering off the VMs
 ```bash

@@ -1,6 +1,6 @@
 {
-  "SCHED_PATH": "./scx",
-  "scheds": {
+  "cpu_knobs": {},
+  "schedulers": {
     "CPU": "build/scheds/c/scx_simple",
     "IDLE": "build/scheds/c/scx_simple",
     "IO": "build/scheds/c/scx_prev",

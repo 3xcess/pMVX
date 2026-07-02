@@ -4,20 +4,24 @@ import copy
 import json
 import os
 import subprocess
-import sys
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 import state_manager
 from llm.build_context import build_context
-from llm.validator import validate_json_text
+from llm.ollama_advisor import (
+    DEFAULT_OLLAMA_MODEL,
+    DEFAULT_OLLAMA_URL,
+    OllamaAdvisorError,
+    get_advisor_response,
+    ollama_model,
+    ollama_url,
+)
 
 
 CONFIG_DIR = os.path.dirname(os.path.abspath(__file__))
 TESTS_DIR = os.path.join(CONFIG_DIR, "tests")
-MOCK_GEMINI = os.path.join(CONFIG_DIR, "llm", "mock_gemini_response.py")
 HISTORY_PATH = os.path.join(TESTS_DIR, "tuning_history.jsonl")
-PROPOSALS_PATH = os.path.join(TESTS_DIR, "llm_proposals.jsonl")
 
 
 def log(message: str) -> None:
@@ -115,35 +119,9 @@ def run_compare() -> None:
     run_command(["./tests/compare.sh"], "Comparing vm1 and vm2 benchmark output", fatal=True)
 
 
-def call_advisor(context: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
-    log("Calling local mock Gemini advisor")
-    completed = subprocess.run(
-        [sys.executable, MOCK_GEMINI],
-        cwd=CONFIG_DIR,
-        input=json.dumps(context),
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    if completed.returncode != 0:
-        raise RuntimeError(
-            "mock Gemini advisor failed"
-            + (f": {completed.stderr.strip()}" if completed.stderr.strip() else "")
-        )
-    ok, errors, response = validate_json_text(completed.stdout)
-    raw_entry = {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "loop_index": context.get("loop_index"),
-        "raw_response": completed.stdout,
-        "validation_ok": ok,
-        "validation_errors": errors,
-    }
-    append_jsonl(PROPOSALS_PATH, raw_entry)
-    if not ok:
-        raise ValueError("advisor response validation failed: " + "; ".join(errors))
-    if not isinstance(response, dict):
-        raise ValueError("advisor response validation failed: response was not an object")
-    return response, completed.stdout
+def call_advisor(context: Dict[str, Any]) -> Dict[str, Any]:
+    log("Calling local Ollama advisor")
+    return get_advisor_response(context)
 
 
 def append_history(
@@ -205,11 +183,18 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     log(
-        "Starting LLM-guided tuning "
+        "Starting Ollama-guided tuning "
         f"(confidence threshold={args.confidence_threshold}, "
         f"max loops={args.max_loops if args.max_loops is not None else 'unset'}, "
         f"runs per window={args.runs_per_window})"
     )
+    log(
+        "Ollama advisor endpoint="
+        f"{ollama_url()} model={ollama_model()} "
+        f"(defaults: {DEFAULT_OLLAMA_URL}, {DEFAULT_OLLAMA_MODEL})"
+    )
+    if args.max_loops is None:
+        log("warning: no --max-loops supplied; loop may continue until confidence threshold is reached")
 
     state_manager.ensure_state_files()
     state_manager.sync_dispatcher_configs_from_state()
@@ -232,12 +217,12 @@ def main() -> int:
 
         context = build_context(loop_index, args.confidence_threshold)
         try:
-            advisor_response, _ = call_advisor(context)
+            advisor_response = call_advisor(context)
             validation_ok = True
             validation_errors: List[str] = []
-        except ValueError as exc:
+        except OllamaAdvisorError as exc:
             validation_ok = False
-            validation_errors = [str(exc)]
+            validation_errors = exc.validation_errors or [str(exc)]
             append_history(
                 loop_index,
                 args.confidence_threshold,

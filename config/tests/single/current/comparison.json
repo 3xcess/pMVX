@@ -1,0 +1,19 @@
+{
+  "candidate_vs_baseline": {
+    "elapsed_delta_percent": 96412.5,
+    "notes": "elapsed regressed by 96412.500%",
+    "p99_delta_percent": null,
+    "throughput_delta_percent": null,
+    "winner": "baseline"
+  },
+  "candidate_vs_best": {
+    "elapsed_delta_percent": 96412.5,
+    "notes": "elapsed regressed by 96412.500%",
+    "p99_delta_percent": null,
+    "throughput_delta_percent": null,
+    "winner": "best"
+  },
+  "objective_notes": "Promote only when candidate conservatively beats current best and does not materially lose to vanilla baseline.",
+  "should_promote_candidate_by_metrics": false,
+  "timestamp": "2026-07-02T19:03:44.490209+00:00"
+}

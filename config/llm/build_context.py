@@ -20,6 +20,7 @@ VM1_TEST = os.path.join(TESTS_DIR, "vm1-test.txt")
 VM2_TEST = os.path.join(TESTS_DIR, "vm2-test.txt")
 VM2_DETAIL = os.path.join(TESTS_DIR, "vm2-test_detail.txt")
 HISTORY_PATH = os.path.join(TESTS_DIR, "tuning_history.jsonl")
+ALLOWED_SURFACE_PATH = os.path.join(SCRIPT_DIR, "allowed_surface.json")
 
 
 def load_json_file(path: str, default: Any) -> Any:
@@ -184,6 +185,11 @@ def build_context(loop_index: int, confidence_threshold: float) -> Dict[str, Any
     return {
         "loop_index": loop_index,
         "confidence_threshold": confidence_threshold,
+        "local_only_note": (
+            "The advisor is local Ollama only. No Gemini, OpenAI, Anthropic, "
+            "cloud API, or external network advisor is being used."
+        ),
+        "allowed_tuning_surface": load_json_file(ALLOWED_SURFACE_PATH, {}),
         "current_main_config_state": load_json_file(MAIN_STATE_PATH, {}),
         "current_challenger_config_state": load_json_file(CHALLENGER_STATE_PATH, {}),
         "dispatcher_config_main": load_json_file(MAIN_DISPATCHER_CONFIG, {}),
