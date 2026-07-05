@@ -23,25 +23,43 @@ echo "[*] Setting up Rust nightly..."
 rustup install nightly
 rustup override set nightly
 
-echo "[*] Building C schedulers..."
-make all
-echo "[*] Installing C schedulers..."
-make install INSTALL_DIR=~/bin
-echo "[*] C schedulers install complete..."
+# echo "[*] Building C schedulers..."
+# make all
+# echo "[*] Installing C schedulers..."
+# make install INSTALL_DIR=~/bin
+# echo "[*] C schedulers install complete..."
 
 echo "[*] Building Rust schedulers..."
 #cargo build --profile=release-tiny
-cargo build --profile=release-tiny   -p scx_bpfland   -p scx_beerland   -p scx_layered   -p scx_lavd -p scx_flash -p scx_cosmos
+cargo build --profile=release-tiny \
+    -p scx_beerland \
+    -p scx_bpfland \
+    -p scx_flash \
+    -p scx_cake \
+    -p scx_cosmos \
+    -p scx_lavd \
+    -p scx_layered \
+    -p scx_mitosis \
+    -p scx_p2dq \
+    -p scx_rustland \
+    -p scx_rusty \
+    -p scx_tickless
 
 echo "[*] Installing Rust schedulers..."
 
 scheds=(
     scx_beerland
     scx_bpfland
+    scx_flash
+    scx_cake
+    scx_cosmos
     scx_lavd
     scx_layered
-    scx_cosmos
-    scx_flash
+    scx_mitosis
+    scx_p2dq
+    scx_rustland
+    scx_rusty
+    scx_tickless
 )
 
 for s in "${scheds[@]}"; do
